@@ -3,6 +3,8 @@ dist: trusty
 node_js:
   - "node"
   - "lts/*"
+  - "12"
+  - "10"
 
 before_script:
   - npm install
