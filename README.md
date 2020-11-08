@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/asamuzaK/js2bin-version-info.svg?branch=master)](https://travis-ci.com/asamuzaK/js2bin-version-info)
+
 # js2bin version info
 
 Helper module for [js2bin](https://github.com/criblio/js2bin).
