@@ -141,7 +141,7 @@ class VersionInfo {
    */
   async _setNodeltsCodenames() {
     const stats = await fetchJson(NODEJS_SCHEDULE, this._timeout);
-    if (stats && Object.keys(stats).some(key => REG_NODEJS_KEY.test(key))) {
+    if (stats && Object.keys(stats).every(key => REG_NODEJS_KEY.test(key))) {
       const now = Date.now();
       const values = Object.values(stats);
       for (const value of values) {
