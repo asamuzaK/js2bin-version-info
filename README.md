@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/asamuzaK/js2bin-version-info.svg?branch=master)](https://travis-ci.com/asamuzaK/js2bin-version-info)
+[![Build Status](https://travis-ci.com/asamuzaK/js2bin-version-info.svg?branch=main)](https://travis-ci.com/asamuzaK/js2bin-version-info)
 
 # js2bin version info
 
