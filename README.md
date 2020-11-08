@@ -19,7 +19,7 @@ const getVersionForBuild = async () => {
   return version;
 };
 
-/*
+/**
  * Returns an array of latest versions for the "ci" command.
  * It will return an empty array if all the latest versions are already
  * available in the js2bin release assets.
