@@ -359,8 +359,8 @@ describe('version info', () => {
         json: async () => ({
           'v0.10': {
             codename: 'Foo',
-            end: new Date(now - 200),
-            start: new Date(now - 100)
+            end: new Date(now - 100),
+            start: new Date(now - 300)
           }
         })
       });
@@ -378,8 +378,8 @@ describe('version info', () => {
         json: async () => ({
           'v0.10': {
             codename: 'Foo',
-            end: new Date(now - 200),
-            start: new Date(now - 100)
+            end: new Date(now - 100),
+            start: new Date(now - 300)
           },
           v1: {
             codename: '',
@@ -393,7 +393,7 @@ describe('version info', () => {
           },
           v3: {
             codename: 'Baz',
-            end: new Date(now + 200),
+            end: new Date(now + 300),
             start: new Date(now + 100)
           }
         })
@@ -451,7 +451,7 @@ describe('version info', () => {
           },
           v3: {
             codename: 'Baz',
-            end: new Date(now + 200),
+            end: new Date(now + 300),
             start: new Date(now + 100)
           }
         })
@@ -507,7 +507,7 @@ describe('version info', () => {
           },
           v3: {
             codename: 'Baz',
-            end: new Date(now + 200),
+            end: new Date(now + 300),
             start: new Date(now + 100)
           }
         })
