@@ -67,6 +67,15 @@ describe('fetch JSON', () => {
   });
 
   it('should throw', async () => {
+    // NOTE: really tries to fetch but rejected because of timeout
+    await fetchJson('https://example.com', 1).catch(e => {
+      assert.instanceOf(e, Error, 'error');
+      assert.strictEqual(e.message,
+        'Timeout. Server did not respond in time.');
+    });
+  });
+
+  it('should throw', async () => {
     const stubFetch = sinon.stub(fetch, 'Promise').resolves({
       ok: false,
       status: 404
