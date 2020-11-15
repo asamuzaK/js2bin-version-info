@@ -146,10 +146,12 @@ class VersionInfo {
       const values = Object.values(stats);
       for (const value of values) {
         const { codename, end, start } = value;
-        const isActive = new Date(end) > now && new Date(start) < now;
-        // only if LTS is active or still maintained
-        if (codename && isActive) {
-          this._nodelts[codename] = new VersionContainer();
+        if (codename) {
+          const isActive = new Date(end) > now && new Date(start) < now;
+          // only if LTS is active or still maintained
+          if (isActive) {
+            this._nodelts[codename] = new VersionContainer();
+          }
         }
       }
     }
