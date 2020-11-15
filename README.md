@@ -12,7 +12,7 @@ Resolve version information from online resources.
 const { VersionInfo } = require('js2bin-version-info');
 
 /**
- * Returns a latest version for the "build" command.
+ * Returns the latest version, for the "build" command.
  */
 const getVersionForBuild = async () => {
   const info = new VersionInfo();
@@ -21,7 +21,7 @@ const getVersionForBuild = async () => {
 };
 
 /**
- * Returns an array of latest versions for the "ci" command.
+ * Returns an array of the latest versions, for the "ci" command.
  * It will return an empty array if all the latest versions are already
  * available in the js2bin release assets.
  */
