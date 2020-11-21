@@ -139,6 +139,106 @@ describe('version info', () => {
     assert.strictEqual(info._timeout, 30000, 'timeout');
   });
 
+  describe('getter / setter', () => {
+    it('should get false', () => {
+      const info = new VersionInfo();
+      assert.isFalse(info.active, 'active');
+    });
+
+    it('should get true', () => {
+      const info = new VersionInfo({
+        active: true
+      });
+      assert.isTrue(info.active, 'active');
+    });
+
+    it('should set value', () => {
+      const info = new VersionInfo({
+        active: true
+      });
+      info.active = false;
+      assert.isFalse(info.active, 'active');
+    });
+
+    it('should set value', () => {
+      const info = new VersionInfo({
+        active: false
+      });
+      info.active = true;
+      assert.isTrue(info.active, 'active');
+    });
+
+    it('should get false', () => {
+      const info = new VersionInfo();
+      assert.isFalse(info.current, 'current');
+    });
+
+    it('should get true', () => {
+      const info = new VersionInfo({
+        current: true
+      });
+      assert.isTrue(info.current, 'current');
+    });
+
+    it('should set value', () => {
+      const info = new VersionInfo({
+        current: true
+      });
+      info.current = false;
+      assert.isFalse(info.current, 'current');
+    });
+
+    it('should set value', () => {
+      const info = new VersionInfo({
+        current: false
+      });
+      info.current = true;
+      assert.isTrue(info.current, 'current');
+    });
+
+    it('should get default value', () => {
+      const info = new VersionInfo();
+      assert.strictEqual(info.timeout, 30000, 'timeout');
+    });
+
+    it('should get default value', () => {
+      const info = new VersionInfo({
+        timeout: true
+      });
+      assert.strictEqual(info.timeout, 30000, 'timeout');
+    });
+
+    it('should get default value', () => {
+      const info = new VersionInfo({
+        timeout: -1
+      });
+      assert.strictEqual(info.timeout, 30000, 'timeout');
+    });
+
+    it('should get value', () => {
+      const info = new VersionInfo({
+        timeout: 10000
+      });
+      assert.strictEqual(info.timeout, 10000, 'timeout');
+    });
+
+    it('should set value', () => {
+      const info = new VersionInfo({
+        timeout: 10000
+      });
+      info.timeout = 20000;
+      assert.strictEqual(info.timeout, 20000, 'timeout');
+    });
+
+    it('should not set value', () => {
+      const info = new VersionInfo({
+        timeout: 10000
+      });
+      info.timeout = -1;
+      assert.strictEqual(info.timeout, 10000, 'timeout');
+    });
+  });
+
   describe('get version list', () => {
     it('should throw', () => {
       const info = new VersionInfo();
@@ -406,6 +506,51 @@ describe('version info', () => {
       assert.isObject(info._nodelts.Bar, 'set');
       assert.isUndefined(info._nodelts.Baz, 'not set');
     });
+
+    it('should set', async () => {
+      const now = Date.now();
+      const stubFetch = sinon.stub(fetch, 'Promise').resolves({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          'v0.10': {
+            codename: 'Foo',
+            end: new Date(now - 100),
+            start: new Date(now - 300)
+          },
+          v1: {
+            codename: '',
+            end: new Date(now + 100),
+            start: new Date(now - 200)
+          },
+          v2: {
+            codename: 'Bar',
+            end: new Date(now + 200),
+            start: new Date(now - 100)
+          },
+          v3: {
+            codename: '',
+            end: new Date(now + 300),
+            start: new Date(now - 50)
+          },
+          v4: {
+            codename: 'Baz',
+            end: new Date(now + 400),
+            start: new Date(now + 100)
+          }
+        })
+      });
+      const info = new VersionInfo({
+        current: true
+      });
+      await info._setNodeltsCodenames();
+      stubFetch.restore();
+      assert.strictEqual(Object.keys(info._nodelts).length, 3, 'set');
+      assert.isUndefined(info._nodelts.Foo, 'not set');
+      assert.isObject(info._nodelts.Bar, 'set');
+      assert.isUndefined(info._nodelts.Baz, 'not set');
+      assert.isObject(info._nodelts.current, 'set');
+    });
   });
 
   describe('set versions of nodejs LTS', () => {
@@ -590,6 +735,89 @@ describe('version info', () => {
       assert.isObject(info._nodelts.Baz, 'set');
       assert.strictEqual(info._nodelts.Baz.latest, '3.0.0', 'set');
     });
+
+    it('should set', async () => {
+      const stubFetch = sinon.stub(fetch, 'Promise');
+      const now = Date.now();
+      stubFetch.onCall(0).resolves({
+        ok: true,
+        status: 200,
+        json: async () => [
+          {
+            lts: 'Foo',
+            version: 'v0.10.2'
+          },
+          {
+            lts: 'Foo',
+            version: 'v0.10.1'
+          },
+          {
+            lts: '',
+            version: 'v1.0.0'
+          },
+          {
+            lts: 'Bar',
+            version: 'v2.1.0'
+          },
+          {
+            lts: 'Bar',
+            version: 'v2.0.0'
+          },
+          {
+            lts: 'Baz',
+            version: 'v3.0.0'
+          },
+          {
+            lts: '',
+            version: 'v4.0.0'
+          }
+        ]
+      });
+      stubFetch.onCall(1).resolves({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          'v0.10': {
+            codename: 'Foo',
+            end: new Date(now - 100),
+            start: new Date(now - 300)
+          },
+          v1: {
+            codename: '',
+            end: new Date(now + 100),
+            start: new Date(now - 200)
+          },
+          v2: {
+            codename: 'Bar',
+            end: new Date(now + 200),
+            start: new Date(now - 200)
+          },
+          v3: {
+            codename: 'Baz',
+            end: new Date(now + 300),
+            start: new Date(now - 100)
+          },
+          v4: {
+            codename: '',
+            end: new Date(now + 400),
+            start: new Date(now - 50)
+          }
+        })
+      });
+      const info = new VersionInfo({
+        current: true
+      });
+      await info._setNodeltsVersions();
+      stubFetch.restore();
+      assert.strictEqual(Object.keys(info._nodelts).length, 4, 'set');
+      assert.strictEqual(info._nodelts.latest, '4.0.0', 'set');
+      assert.isObject(info._nodelts.Bar, 'set');
+      assert.strictEqual(info._nodelts.Bar.latest, '2.1.0', 'set');
+      assert.isObject(info._nodelts.Baz, 'set');
+      assert.strictEqual(info._nodelts.Baz.latest, '3.0.0', 'set');
+      assert.isObject(info._nodelts.current, 'set');
+      assert.strictEqual(info._nodelts.current.latest, '4.0.0', 'set');
+    });
   });
 
   describe('get version', () => {
@@ -699,6 +927,85 @@ describe('version info', () => {
       stubFetch.restore();
       assert.isTrue(Array.isArray(res), 'array');
       assert.strictEqual(res.length, 2, 'length');
+      assert.isTrue(res.includes('2.1.0'), 'value');
+      assert.isTrue(res.includes('1.3.0'), 'value');
+    });
+
+    it('should get value', async () => {
+      const stubFetch = sinon.stub(fetch, 'Promise');
+      const now = Date.now();
+      stubFetch.onCall(0).resolves({
+        ok: true,
+        status: 200,
+        json: async () => [{
+          assets: [
+            {
+              name: 'darwin-1.2.3'
+            },
+            {
+              name: 'linux-1.2.3'
+            },
+            {
+              name: 'windows-1.2.3'
+            }
+          ]
+        }]
+      });
+      stubFetch.onCall(1).resolves({
+        ok: true,
+        status: 200,
+        json: async () => [
+          {
+            lts: 'Foo',
+            version: 'v1.3.0'
+          },
+          {
+            lts: 'Foo',
+            version: 'v1.2.3'
+          },
+          {
+            lts: 'Bar',
+            version: 'v2.1.0'
+          },
+          {
+            lts: 'Bar',
+            version: 'v2.0.0'
+          },
+          {
+            lts: '',
+            version: 'v3.0.0'
+          }
+        ]
+      });
+      stubFetch.onCall(2).resolves({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          v1: {
+            codename: 'Foo',
+            end: new Date(now + 200),
+            start: new Date(now - 200)
+          },
+          v2: {
+            codename: 'Bar',
+            end: new Date(now + 300),
+            start: new Date(now - 100)
+          },
+          v3: {
+            codename: '',
+            end: new Date(now + 400),
+            start: new Date(now - 50)
+          }
+        })
+      });
+      const info = new VersionInfo();
+      const res = await info.get('ci', {
+        current: true
+      });
+      stubFetch.restore();
+      assert.isTrue(Array.isArray(res), 'array');
+      assert.strictEqual(res.length, 3, 'length');
+      assert.isTrue(res.includes('3.0.0'), 'value');
       assert.isTrue(res.includes('2.1.0'), 'value');
       assert.isTrue(res.includes('1.3.0'), 'value');
     });
@@ -837,6 +1144,74 @@ describe('version info', () => {
       const info = new VersionInfo();
       const res = await info.get('ci', {
         active: true,
+        timeout: 10000
+      });
+      stubFetch.restore();
+      assert.strictEqual(res, '2.1.0', 'result');
+    });
+
+    it('should get value', async () => {
+      const stubFetch = sinon.stub(fetch, 'Promise');
+      const now = Date.now();
+      stubFetch.onCall(0).resolves({
+        ok: true,
+        status: 200,
+        json: async () => [{
+          assets: [
+            {
+              name: 'darwin-1.2.3'
+            },
+            {
+              name: 'linux-1.2.3'
+            },
+            {
+              name: 'windows-1.2.3'
+            }
+          ]
+        }]
+      });
+      stubFetch.onCall(1).resolves({
+        ok: true,
+        status: 200,
+        json: async () => [
+          {
+            lts: 'Foo',
+            version: 'v1.3.0'
+          },
+          {
+            lts: 'Foo',
+            version: 'v1.2.3'
+          },
+          {
+            lts: 'Bar',
+            version: 'v2.1.0'
+          },
+          {
+            lts: 'Bar',
+            version: 'v2.0.0'
+          }
+        ]
+      });
+      stubFetch.onCall(2).resolves({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          v1: {
+            codename: 'Foo',
+            end: new Date(now + 200),
+            start: new Date(now - 200)
+          },
+          v2: {
+            codename: 'Bar',
+            end: new Date(now + 300),
+            start: new Date(now - 100)
+          }
+        })
+      });
+      const info = new VersionInfo({
+        active: true
+      });
+      const res = await info.get('ci', {
         timeout: 10000
       });
       stubFetch.restore();
