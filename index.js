@@ -61,17 +61,58 @@ class VersionContainer {
 
 /* version info */
 class VersionInfo {
-  constructor() {
+  /**
+   * constructor
+   *
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.active] - for 'ci', get only latest active version
+   * @param {boolean} [opt.current] - for 'ci', include current nodejs release
+   * @param {number} [opt.timeout] - timeout on fetch, in milliseconds
+   */
+  constructor(opt = {}) {
+    const { active, current, timeout } = opt;
+    this._active = !!active;
+    this._current = !!current;
     this._js2bin = {
       latest: null,
       darwin: new VersionContainer(),
       linux: new VersionContainer(),
       windows: new VersionContainer()
     };
+    this._js2binReleaseUrl = JS2BIN_RELEASE;
     this._nodelts = {
       latest: null
     };
-    this._timeout = TIMEOUT_FETCH;
+    this._nodeReleaseUrl = NODEJS_RELEASE;
+    this._nodeScheduleUrl = NODEJS_SCHEDULE;
+    this._timeout =
+      Number.isInteger(timeout) && timeout >= 0 ? timeout : TIMEOUT_FETCH;
+  }
+
+  get active() {
+    return !!this._active;
+  }
+
+  set active(bool) {
+    this._active = !!bool;
+  }
+
+  get current() {
+    return !!this._current;
+  }
+
+  set current(bool) {
+    this._current = !!bool;
+  }
+
+  get timeout() {
+    return this._timeout;
+  }
+
+  set timeout(ms) {
+    if (Number.isInteger(ms) && ms >= 0) {
+      this._timeout = ms;
+    }
   }
 
   /**
@@ -96,7 +137,6 @@ class VersionInfo {
             versionList.add(version);
           }
         } else {
-          // only latest version of each LTS
           name === 'nodelts' && versionList.add(value.latest);
         }
       }
@@ -110,7 +150,7 @@ class VersionInfo {
    * @returns {void}
    */
   async _setJs2binVersions() {
-    const res = await fetchJson(JS2BIN_RELEASE, this._timeout);
+    const res = await fetchJson(this._js2binReleaseUrl, this._timeout);
     if (Array.isArray(res)) {
       const [{ assets }] = res;
       if (Array.isArray(assets)) {
@@ -140,7 +180,7 @@ class VersionInfo {
    * @returns {void}
    */
   async _setNodeltsCodenames() {
-    const stats = await fetchJson(NODEJS_SCHEDULE, this._timeout);
+    const stats = await fetchJson(this._nodeScheduleUrl, this._timeout);
     if (stats && Object.keys(stats).every(key => REG_NODEJS_KEY.test(key))) {
       const now = Date.now();
       const values = Object.values(stats);
@@ -154,6 +194,9 @@ class VersionInfo {
           }
         }
       }
+      if (this._current) {
+        this._nodelts.current = new VersionContainer();
+      }
     }
   }
 
@@ -163,11 +206,12 @@ class VersionInfo {
    * @returns {void}
    */
   async _setNodeltsVersions() {
-    const res = await fetchJson(NODEJS_RELEASE, this._timeout);
+    const res = await fetchJson(this._nodeReleaseUrl, this._timeout);
     if (Array.isArray(res)) {
       await this._setNodeltsCodenames();
       for (const item of res) {
-        const { lts: codename, version: nodeVersion } = item;
+        const { lts, version: nodeVersion } = item;
+        const codename = lts || (this._current && 'current');
         if (codename && this._nodelts[codename] &&
             REG_SEMVER.test(nodeVersion)) {
           const [, version] = REG_SEMVER.exec(nodeVersion);
@@ -190,7 +234,8 @@ class VersionInfo {
    *
    * @param {!string} cmd - command name, 'build' or 'ci'
    * @param {object} [opt] - options
-   * @param {boolean} [opt.active] - opt for 'ci', get only active LTS version
+   * @param {boolean} [opt.active] - for 'ci', get only latest active version
+   * @param {boolean} [opt.current] - for 'ci', include current nodejs release
    * @param {number} [opt.timeout] - timeout on fetch, in milliseconds
    * @returns {(string|Array|null)} - result
    */
@@ -201,15 +246,18 @@ class VersionInfo {
       throw new Error(msg);
     }
     let res;
-    const { active, timeout } = opt;
-    if (Number.isInteger(timeout)) {
+    const { active, current, timeout } = opt;
+    if (typeof current === 'boolean') {
+      this._current = current;
+    }
+    if (Number.isInteger(timeout) && timeout >= 0) {
       this._timeout = timeout;
     }
     await this._setJs2binVersions();
     if (cmd === 'ci') {
       const js2binList = this._getVersionList('js2bin');
       await this._setNodeltsVersions();
-      if (active) {
+      if (active || this._active) {
         const latest = this._nodelts.latest;
         if (latest && !js2binList.includes(latest)) {
           res = latest;

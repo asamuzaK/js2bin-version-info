@@ -54,6 +54,20 @@ process.on('unhandledRejection', e => {
   const endCiList = new Date();
   console.log(`elapsed time: ${endCiList - startCiList}\n`);
 
+  console.log('get versions for "ci" including current release\n');
+  const startCiCurrentList = new Date();
+  const versionInfoCiCurrentList = new VersionInfo();
+  console.log(`run get('ci', { current: true }): ${startCiCurrentList}`);
+  const resCiCurrentList = await versionInfoCiCurrentList.get('ci', {
+    current: true
+  });
+  console.log('ci versions:');
+  console.log(resCiCurrentList);
+  console.log('if the result is an empty [], the latest versions are already built.');
+  const endCiCurrentList = new Date();
+  console.log(`elapsed time: ${endCiCurrentList - startCiCurrentList}\n`);
+
+  console.log('get only the latest active version\n');
   const startCiActive = new Date();
   const versionInfoCiActive = new VersionInfo();
   console.log(`run get('ci', { active: true }): ${startCiActive}`);
