@@ -32,6 +32,38 @@ const getVersionsForCi = async () => {
 };
 ```
 
+### Options
+
+You can give options either when you create an instance or when you get versions.
+
+```
+const info = new VersionInfo(opt);
+```
+
+* @param {object} [opt] - options
+* @param {boolean} [opt.active] - for 'ci', get only the latest active version
+* @param {boolean} [opt.current] - for 'ci', include current nodejs release
+* @param {number} [opt.timeout] - timeout on fetch, in milliseconds
+
+```
+const getVersionsForCi = async () => {
+  const info = new VersionInfo({
+    current: true,
+    timeout: 10000
+  });
+  const versions = await info.get('ci');
+  return versions;
+};
+
+const getVersionForBuild = async () => {
+  const info = new VersionInfo();
+  const version = await info.get('build', {
+    timeout: 10000
+  });
+  return version;
+};
+```
+
 ## Demo
 
 Run `npm run demo` for the live demo.
