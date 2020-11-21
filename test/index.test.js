@@ -337,8 +337,36 @@ describe('version info', () => {
       const stubFetch = sinon.stub(fetch, 'Promise').resolves({
         ok: true,
         status: 200,
+        json: async () => ['assets']
+      });
+      const info = new VersionInfo();
+      await info._setJs2binVersions();
+      stubFetch.restore();
+      assert.isNull(info._js2bin.latest, 'not set');
+    });
+
+    it('should not set', async () => {
+      const stubFetch = sinon.stub(fetch, 'Promise').resolves({
+        ok: true,
+        status: 200,
         json: async () => [{
           assets: []
+        }]
+      });
+      const info = new VersionInfo();
+      await info._setJs2binVersions();
+      stubFetch.restore();
+      assert.isNull(info._js2bin.latest, 'not set');
+    });
+
+    it('should not set', async () => {
+      const stubFetch = sinon.stub(fetch, 'Promise').resolves({
+        ok: true,
+        status: 200,
+        json: async () => [{
+          assets: [{
+            name: 1
+          }]
         }]
       });
       const info = new VersionInfo();

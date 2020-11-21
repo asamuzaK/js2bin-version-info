@@ -79,14 +79,16 @@ class VersionInfo {
       linux: new VersionContainer(),
       windows: new VersionContainer()
     };
-    this._js2binReleaseUrl = JS2BIN_RELEASE;
     this._nodelts = {
       latest: null
     };
-    this._nodeReleaseUrl = NODEJS_RELEASE;
-    this._nodeScheduleUrl = NODEJS_SCHEDULE;
     this._timeout =
       Number.isInteger(timeout) && timeout >= 0 ? timeout : TIMEOUT_FETCH;
+    this._url = {
+      js2binRelease: JS2BIN_RELEASE,
+      nodeRelease: NODEJS_RELEASE,
+      nodeSchedule: NODEJS_SCHEDULE
+    };
   }
 
   get active() {
@@ -150,13 +152,14 @@ class VersionInfo {
    * @returns {void}
    */
   async _setJs2binVersions() {
-    const res = await fetchJson(this._js2binReleaseUrl, this._timeout);
+    const res = await fetchJson(this._url.js2binRelease, this._timeout);
     if (Array.isArray(res)) {
       const [{ assets }] = res;
       if (Array.isArray(assets)) {
         for (const asset of assets) {
           const { name } = asset;
-          if (REG_PLATFORM.test(name) && REG_SEMVER.test(name)) {
+          if (isString(name) &&
+              REG_PLATFORM.test(name) && REG_SEMVER.test(name)) {
             const [, platform] = REG_PLATFORM.exec(name);
             const [, version] = REG_SEMVER.exec(name);
             if (!this._js2bin.latest ||
@@ -180,7 +183,7 @@ class VersionInfo {
    * @returns {void}
    */
   async _setNodeltsCodenames() {
-    const stats = await fetchJson(this._nodeScheduleUrl, this._timeout);
+    const stats = await fetchJson(this._url.nodeSchedule, this._timeout);
     if (stats && Object.keys(stats).every(key => REG_NODEJS_KEY.test(key))) {
       const now = Date.now();
       const values = Object.values(stats);
@@ -188,7 +191,6 @@ class VersionInfo {
         const { codename, end, start } = value;
         if (codename) {
           const isActive = new Date(end) > now && new Date(start) < now;
-          // only if LTS is active or still maintained
           if (isActive) {
             this._nodelts[codename] = new VersionContainer();
           }
@@ -206,7 +208,7 @@ class VersionInfo {
    * @returns {void}
    */
   async _setNodeltsVersions() {
-    const res = await fetchJson(this._nodeReleaseUrl, this._timeout);
+    const res = await fetchJson(this._url.nodeRelease, this._timeout);
     if (Array.isArray(res)) {
       await this._setNodeltsCodenames();
       for (const item of res) {
@@ -258,7 +260,7 @@ class VersionInfo {
       const js2binList = this._getVersionList('js2bin');
       await this._setNodeltsVersions();
       if (active || this._active) {
-        const latest = this._nodelts.latest;
+        const { latest } = this._nodelts;
         if (latest && !js2binList.includes(latest)) {
           res = latest;
         }
