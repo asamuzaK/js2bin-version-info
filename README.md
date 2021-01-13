@@ -1,4 +1,6 @@
 [![build](https://github.com/asamuzaK/js2bin-version-info/workflows/build/badge.svg)](https://github.com/asamuzaK/js2bin-version-info/actions?query=workflow%3Abuild)
+[![dependencies Status](https://david-dm.org/asamuzaK/js2bin-version-info/status.svg)](https://david-dm.org/asamuzaK/js2bin-version-info)
+[![devDependency Status](https://david-dm.org/asamuzaK/js2bin-version-info/dev-status.svg)](https://david-dm.org/asamuzaK/js2bin-version-info?type=dev)
 [![npm version](https://badge.fury.io/js/js2bin-version-info.svg)](https://badge.fury.io/js/js2bin-version-info)
 
 # js2bin version info
